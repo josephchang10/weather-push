@@ -7,15 +7,17 @@
 //
 
 import UIKit
+import UserNotifications
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        AVOSCloud.setApplicationId("O9puzzHh3unw1v4BDeuYwtWD-gzGzoHsz", clientKey: "PxJFNhzQwUrkm6kFKHn2UKz0")
+        registerForRemoteNotification()
         return true
     }
 
@@ -41,6 +43,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
-
+    func registerForRemoteNotification() {
+        let uncenter = UNUserNotificationCenter.current()
+        uncenter.delegate = self
+        uncenter.requestAuthorization(options: [UNAuthorizationOptions.alert, UNAuthorizationOptions.badge, UNAuthorizationOptions.sound]) { (granted, error) in
+            UIApplication.shared.registerForRemoteNotifications()
+            print("%@", granted ? "授权成功" : "授权失败")
+        }
+        uncenter.getNotificationSettings { (settings) in
+            if settings.authorizationStatus == .notDetermined {
+                print("未选择")
+            } else if settings.authorizationStatus == .denied {
+                print("未授权")
+            } else if settings.authorizationStatus == .authorized {
+                print("已授权")
+            }
+        }
+    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        AVOSCloud.handleRemoteNotifications(withDeviceToken: deviceToken)
+    }
 }
 
